@@ -151,21 +151,18 @@ async def parse_html_details(html: str) -> dict:
     rows = soup.find_all("tr")
 
     def extract_registration_number():
-        # Ищем строки, которые могут содержать "Mark Number" или "Charter Number"
         for row in rows:
             cells = row.find_all("td")
             for i, cell in enumerate(cells):
                 text = cell.get_text(strip=True)
-
-                # Если нашли строку с номером регистрации
                 if "Mark Number" in text or "Charter Number" in text:
-                    if i + 1 < len(cells):  # Проверяем, что существует второй столбец
+                    if i + 1 < len(cells):
                         registration_number = cells[i + 1].get_text(strip=True)
                         return registration_number
         return None
 
     data = {
-        "state": STATE,  # Замените на нужный штат, если необходимо
+        "state": STATE,
         "name": None,
         "principal_address": None,
         "mailing_address": None,
@@ -209,13 +206,10 @@ async def parse_html_details(html: str) -> dict:
             next_cells = [td.get_text(strip=True) for td in rows[i + 1].find_all("td")]
             if len(next_cells) >= 4:
                 data["name"] = next_cells[0]
-                data["registration_number"] = next_cells[1].replace(" ", "")  # убираем пробелы
+                data["registration_number"] = next_cells[1].replace(" ", "")
                 data["entity_type"] = next_cells[2]
                 data["status"] = next_cells[3]
 
-
-
-        # Обработка строки с адресом главного офиса и почтовым адресом
         if "Principal Home Office Address" in row.text and i + 2 < len(rows):
             address_row = rows[i + 2].find_all("td")
             if len(address_row) == 2:
@@ -224,7 +218,6 @@ async def parse_html_details(html: str) -> dict:
                 data["principal_address"] = "\n".join(principal_text) if principal_text else None
                 data["mailing_address"] = "\n".join(mailing_text) if mailing_text else None
 
-        # Обработка строки с именем владельца и адресом владельца
         if "Owner Name" in row.text and i + 1 < len(rows):
             owner_row = rows[i + 1].find_all("td")
             if len(owner_row) >= 1:
@@ -234,7 +227,6 @@ async def parse_html_details(html: str) -> dict:
                     data["owner_name"] = owner_full[0] if len(owner_full) > 0 else None
                     data["owner_address"] = "\n".join(owner_full[1:]) if len(owner_full) > 1 else None
 
-        # Обработка строки с именем зарегистрированного агента и его адресом
         if "Clerk/Registered Agent" in row.text and i + 2 < len(rows):
             agent_row = rows[i + 2].find_all("td")
             if len(agent_row) >= 2:
