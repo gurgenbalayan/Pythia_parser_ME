@@ -142,7 +142,6 @@ async def parse_html_search(html: str) -> List[Dict]:
                 continue
     except Exception as e:
         logger.error(f"Ошибка при парсинге HTML: {e}")
-
     return results
 
 
